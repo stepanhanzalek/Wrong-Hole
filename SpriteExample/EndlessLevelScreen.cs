@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using tainicom.Aether.Physics2D.Collision.Shapes;
 using tainicom.Aether.Physics2D.Common;
 using WrongHole.Objects;
@@ -15,7 +14,7 @@ namespace WrongHole
     {
         protected PolygonShape _tileMapBoundingBox;
 
-        protected int _score = 0;
+        protected int _score;
 
         public EndlessLevelScreen() : base(0)
         {
@@ -23,27 +22,13 @@ namespace WrongHole
 
         public override void Activate()
         {
+            _score = 0;
+
             _tilemapName = "lvl_endless";
 
             base.Activate();
 
             _tileMapBoundingBox = ObjectFactory.GetTileMapBox(_tilemap.Borders);
-        }
-
-        public override void HandleInput(GameTime gameTime, InputState input)
-        {
-            if (_levelState != LevelState.Playing) return;
-
-            base.HandleInput(gameTime, input);
-
-            if (_lastState.IsKeyDown(Keys.Escape) && !_currState.IsKeyDown(Keys.Escape)) Pause();
-        }
-
-        public override void Update(GameTime gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen)
-        {
-            if (_levelState != LevelState.Playing) return;
-
-            base.Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
         }
 
         public override void Draw(GameTime gameTime)
@@ -142,12 +127,6 @@ namespace WrongHole
             _shakingCountdown = 2f;
             if (!WrongHoleGame.score[CurrentLevel]) WrongHoleGame.score[CurrentLevel] = false;
             _levelState = LevelState.Fail;
-        }
-
-        protected void Pause()
-        {
-            _levelState = LevelState.Pause;
-            ScreenManager.AddScreen(new PauseLevelScreen(this), null);
         }
     }
 }
