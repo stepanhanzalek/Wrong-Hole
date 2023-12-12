@@ -78,6 +78,8 @@ namespace WrongHole.Screens
         {
             base.Activate();
 
+            _levelState = LevelState.Playing;
+
             if (_monochrome == null) _monochrome = Constants.MONOCHROMES[_random.Next(Constants.MONOCHROMES.Length)];
 
             _tilemap = _content.Load<TileMap>(Constants.TILEMAP_PATH + this._tilemapName);
@@ -150,6 +152,8 @@ namespace WrongHole.Screens
             _lastState = _currState;
             _currState = Keyboard.GetState();
 
+            if (_levelState != LevelState.Playing) return;
+
             if (_lastState.IsKeyDown(Keys.Space) && !_currState.IsKeyDown(Keys.Space))
             {
                 if (!_currBall.MoveNext() && _currBall.Current.Value == null)
@@ -164,6 +168,8 @@ namespace WrongHole.Screens
                 var activeBall = _currBall.Current.Value;
                 _cue.Update(gameTime, ref activeBall);
             }
+
+            if (_lastState.IsKeyDown(Keys.Escape) && !_currState.IsKeyDown(Keys.Escape)) Pause();
         }
 
         // Unlike most screens, this should not transition off even if
@@ -172,6 +178,8 @@ namespace WrongHole.Screens
         // parameter to false in order to stop the base Update method wanting to transition off.
         public override void Update(GameTime gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen)
         {
+            if (_levelState == LevelState.Pause) return;
+
             foreach (var (_, ball) in _balls) ball.Update(gameTime);
 
             foreach (var (_, ball) in _ballsPassive) ball.Update(gameTime);
@@ -245,6 +253,17 @@ namespace WrongHole.Screens
             spriteBatch.End();
 
             _fireworks.Draw(gameTime);
+        }
+
+        public void Resume()
+        {
+            _levelState = LevelState.Playing;
+        }
+
+        protected void Pause()
+        {
+            _levelState = LevelState.Pause;
+            ScreenManager.AddScreen(new PauseLevelScreen(this), null);
         }
 
         protected virtual void ResolveCollision(Hole hole, ref List<Hole> removeHoles)
